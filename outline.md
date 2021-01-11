@@ -23,14 +23,17 @@ Bot should be able to do the following:
 
 ## SOLUTION BREAKDOWN
 
+
 ROBOT:
-    Telegram client interface for user. Represent the highest hierarchy of objects
+--
+ _Telegram client interface for user. Represent the highest hierarchy of objects_
     - Client interface for users
     - Collects user details (Name, phone number, email)
     - Collect tracking details (tracking number, carrier name, Item description/name)
     - Notifies users via email and SMS
 
-STORE
-    Object represents Airtable API for storing user details
+STORE:
+--
+    _Object represents Airtable API for storing user details_
     - Connects Airtable API
     - Stores user and trackinf details gotten from ROBOT object
