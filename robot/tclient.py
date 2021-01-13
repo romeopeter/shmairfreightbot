@@ -24,6 +24,7 @@ class Client:
 
         self.bot = telegram.Bot(token=token)
 
+        # Test call
         print(self.bot.get_me())
 
 
