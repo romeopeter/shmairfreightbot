@@ -24,9 +24,9 @@ Bot should be able to do the following:
 ## SOLUTION BREAKDOWN
 
 
-- ROBOT:
+- Client:
  _Telegram client interface for user. Represents the highest hierarchy of objects_
- 
+    + Connects telegram API
     + Client interface for users
     + Collects user details (Name, phone number, email)
     + Collect tracking details (tracking number, carrier name, Item description/name)
@@ -38,3 +38,6 @@ Bot should be able to do the following:
    
     + Connects self-hosted db or 3rd party db API
     + Stores user and tracking details gotten from ROBOT object
+
+Tracker:
+    _Nothing here yet_
