@@ -39,5 +39,5 @@ Bot should be able to do the following:
     + Connects self-hosted db or 3rd party db API
     + Stores user and tracking details gotten from ROBOT object
 
-Tracker:
+- TRACKER:
     _Nothing here yet_
