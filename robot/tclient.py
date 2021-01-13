@@ -9,6 +9,18 @@ class Client:
     """
 
     def __init__(self, token: str) -> None:
+        """
+        Initializes Client Object
+
+        Parameters
+        --------
+        token: str
+            Telegram bot token key
+
+        Returns
+        -------
+        None -- Nothing is returned
+        """
 
         self.bot = telegram.Bot(token=token)
 
