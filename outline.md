@@ -22,22 +22,26 @@ Bot should be able to do the following:
     + Item description
 
 ## SOLUTION BREAKDOWN
+_As OOP_
 
-
-- Client:
+- client(dir):
  _Telegram client interface for user. Represents the highest hierarchy of objects_
-    + Connects telegram API
-    + Client interface for users
-    + Collects user details (Name, phone number, email)
-    + Collect tracking details (tracking number, carrier name, Item description/name)
-    + Requests package tracking data
-    + Notifies users via email and SMS
+
+    - Client
+        + Connects telegram API
+        + Collects user details (Name, phone number, email)
+        + Collect tracking details (tracking number, carrier name, Item description/name)
+        + Notify user of shipment order location via email and SMS
+    
+    - CommandHandlerCallbacks
+        + Provides callback functions to process user inputs
 
 - STORE:
    _Object represents self-hosted db or 3rd party db API for storing user details_
    
-    + Connects self-hosted db or 3rd party db API
-    + Stores user and tracking details gotten from ROBOT object
+    - Connects self-hosted db or 3rd party db API
+    - Stores user and tracking details gotten from 'Client' object
 
 Tracker:
-    _Nothing here yet_
+    - Requests shipment tracking data
+    - Provide data to 'CommandHandlerCallbacks' object
