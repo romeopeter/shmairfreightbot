@@ -29,7 +29,7 @@ _As OOP_
 
     - Client
         + Connects telegram API
-        + Collects user details (Name, phone number, email)
+        + Collects user details (Name, phone number, email)``
         + Collect tracking details (tracking number, carrier name, Item description/name)
         + Notify user of shipment order location via email and SMS
     
