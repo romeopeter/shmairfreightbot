@@ -44,16 +44,30 @@ class Client(CommandHandlerCallbacks):
 
     def set_dispatchers(self) -> None:
         """
-        Calls dispatcher to register handler via 'CommandHandler' method.
+        Calls dispatcher to register handlers via 'CommandHandler' method.
         """
 
+        # Dispatches 'start' command callback
         self.dispatcher.add_handler((CommandHandler("start", self.start_callback)))
+
+        # Dispatches user details callbacks
         self.dispatcher.add_handler((CommandHandler("setname", self.set_name_callback)))
         self.dispatcher.add_handler(
             (CommandHandler("setemail", self.set_email_callback))
         )
         self.dispatcher.add_handler(
             (CommandHandler("setphonenumber", self.set_phone_callback))
+        )
+
+        # Dispatches user tracking details callbacks
+        self.dispatcher.add_handler(
+            (CommandHandler("start", self.set_item_name_callback))
+        )
+        self.dispatcher.add_handler(
+            (CommandHandler("setname", self.set_tracking_number_callback))
+        )
+        self.dispatcher.add_handler(
+            (CommandHandler("setemail", self.set_caurrier_callback))
         )
 
     def start_client(self) -> None:
