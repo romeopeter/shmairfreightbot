@@ -1,3 +1,5 @@
+from telegram import Update
+from telegram.ext import CallbackContext
 from telegram import InlineKeyboardMarkup
 from telegram import InlineKeyboardButton
 
@@ -30,37 +32,33 @@ class CommandHandlerCallbacks:
                 reply_markup=InlineKeyboardMarkup(keyboard),
             )
 
-    def inline_button_callback(self, update, context) -> None:
+    def inline_button_callback(self, update: Update, context: CallbackContext) -> None:
         """Defines which button was tapped on from what is assigned to 'callback-data' in 'InlineKeyboardButton' object"""
 
-        button = update.callback_query.data
+        query = update.callback_query
 
-        if button == "register_shipment":
+        if query.data == "register_shipment":
+            query.answer("👍🏿")
             self.register_shipment_callback(update=update, context=context)
-        elif button == "track_shipment":
+        elif query.data == "track_shipment":
+            query.answer("👍🏿")
             self.track_shipment_callback(update=update, context=context)
 
-    def register_shipment_callback(self, update, context) -> None:
+    def register_shipment_callback(
+        self, update: Update, context: CallbackContext
+    ) -> None:
         """Processes 'register_shipment' inline button command"""
 
-        # reply_text = update.message.reply_text
+        text: str = """Good pick👍🏿 \n\nI can help you create your shipment\n\nYou can control me by sending these commands:\n\n*User Details*\n /setname \- set your name\n/setemail \- Set your email address\n/setphonenumber \- Set your phone number\n\n_Use the /start command to pick your options_"""
 
-        # text: str = """Good pick👍🏿 \n\nI can help you create your shipment\n\nYou can control me by sending these commands:\n\n*User Details*\n /setname \- set your name\n/setemail \- Set your email address\n/setphonenumber \- Set your phone number"""
+        update.callback_query.edit_message_text(text, parse_mode="MarkdownV2")
 
-        # reply_text(text)
-
-        print(repr(update.message.reply_text("jdjdjjdjjjjjdjh")))
-
-    def track_shipment_callback(self, update, context) -> None:
+    def track_shipment_callback(self, update: Update, context: CallbackContext) -> None:
         """Processes 'track_shipment' inline button command"""
 
-        # reply_text = update.message.reply_text
+        text: str = """Good pick👍🏿 \n\nI can help you track your shipment\n\nYou can control me by sending these commands:\n\n*Tracking Details*\n /setitemname \- set shipment item name\n/settrackingnumber \- Set shipment tracking number\n/setcaurrier \- Set caurrier name\n\n_Use the /start command to pick your options_"""
 
-        # text: str = """Good pick👍🏿 \n\nI can help you track your shipment\n\nYou can control me by sending these commands:\n\n*Tracking Details*\n /setitemname \- set shipment item name\n/settrackingnumber \- Set shipment tracking number\n/setcaurrier \- Set caurrier name"""
-
-        # reply_text(text)
-
-        print(repr(update.message.reply_text("jdjdjjdjjjjjdjh")))
+        update.callback_query.edit_message_text(text, parse_mode="MarkdownV2")
 
     # Collects user detatails
     def set_name_callback(self, update, context) -> None:
@@ -69,7 +67,7 @@ class CommandHandlerCallbacks:
         if update:
             try:
                 first_name = str(context.args[0]) or update.message.from_user.first_name
-                last_name = str(context.args[1]) or update.message.from_user.lat_name
+                last_name = str(context.args[1]) or update.message.from_user.last_name
                 print(first_name, last_name)
 
                 if first_name or last_name:
