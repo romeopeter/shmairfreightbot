@@ -44,55 +44,36 @@ class Client(CommandHandlerCallbacks):
         return self.bot.get_me()
 
     def set_dispatchers(self) -> None:
-        """
-        Calls dispatcher to register handlers via 'CommandHandler' method.
-        """
+        """Dispatcher fetches update and dispatches them to 'CommandHandler' object. 'CommandHandler' object calls the required callback for the command."""
 
-        # Dispatches 'start' command callback
-        start_command = self.dispatcher.add_handler(
-            (CommandHandler("start", self.start_callback))
-        )
+        # Dispatch command to handlers
 
-        # Dispatches command button callback for inline keyboard
-        keyboad_command = self.dispatcher.add_handler(
+        self.dispatcher.add_handler((CommandHandler("start", self.start_callback)))
+        self.dispatcher.add_handler(
             CallbackQueryHandler(self.inline_button_callback, pass_user_data=True)
         )
 
-        """Prevent text command before keyboad commands when in inline mode.
-        Text command example: '/setname', '/setemail', '/setphonenumber' etc"""
-        if start_command:
+        # Shipment registeration command
+        self.dispatcher.add_handler(
+            (CommandHandler("set_name", self.set_name_callback))
+        )
+        self.dispatcher.add_handler(
+            (CommandHandler("set_email", self.set_email_callback))
+        )
+        self.dispatcher.add_handler(
+            (CommandHandler("set_phone_number", self.set_phone_callback))
+        )
 
-            if keyboad_command:
-
-                # Dispatches user details callbacks
-                self.dispatcher.add_handler(
-                    (CommandHandler("setname", self.set_name_callback))
-                )
-                self.dispatcher.add_handler(
-                    (CommandHandler("setemail", self.set_email_callback))
-                )
-                self.dispatcher.add_handler(
-                    (CommandHandler("setphonenumber", self.set_phone_callback))
-                )
-
-                # Dispatches user tracking details callbacks
-                self.dispatcher.add_handler(
-                    (CommandHandler("setitemname", self.set_item_name_callback))
-                )
-                self.dispatcher.add_handler(
-                    (
-                        CommandHandler(
-                            "settrackingnumber", self.set_tracking_number_callback
-                        )
-                    )
-                )
-                self.dispatcher.add_handler(
-                    (CommandHandler("setcaurrier", self.set_caurrier_callback))
-                )
-            else:
-                chat_id = self.bot.get_updates()
-                # self.bot.send_message(chat_id=chat_id, texg="I'm sorry but I can't do that")
-                print(chat_id)
+        # Shipment tracking commands
+        self.dispatcher.add_handler(
+            (CommandHandler("set_item_name", self.set_item_name_callback))
+        )
+        self.dispatcher.add_handler(
+            (CommandHandler("set_tracking_number", self.set_tracking_number_callback))
+        )
+        self.dispatcher.add_handler(
+            (CommandHandler("setcaurrier", self.set_caurrier_callback))
+        )
 
     def start_client(self) -> None:
         """
