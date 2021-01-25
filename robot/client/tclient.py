@@ -1,6 +1,7 @@
 from telegram import Bot
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
+from telegram.ext import CallbackQueryHandler
 
 from decouple import config
 
@@ -48,27 +49,50 @@ class Client(CommandHandlerCallbacks):
         """
 
         # Dispatches 'start' command callback
-        self.dispatcher.add_handler((CommandHandler("start", self.start_callback)))
-
-        # Dispatches user details callbacks
-        self.dispatcher.add_handler((CommandHandler("setname", self.set_name_callback)))
-        self.dispatcher.add_handler(
-            (CommandHandler("setemail", self.set_email_callback))
-        )
-        self.dispatcher.add_handler(
-            (CommandHandler("setphonenumber", self.set_phone_callback))
+        start_command = self.dispatcher.add_handler(
+            (CommandHandler("start", self.start_callback))
         )
 
-        # Dispatches user tracking details callbacks
-        self.dispatcher.add_handler(
-            (CommandHandler("start", self.set_item_name_callback))
+        # Dispatches command button callback for inline keyboard
+        keyboad_command = self.dispatcher.add_handler(
+            CallbackQueryHandler(self.inline_button_callback, pass_user_data=True)
         )
-        self.dispatcher.add_handler(
-            (CommandHandler("setname", self.set_tracking_number_callback))
-        )
-        self.dispatcher.add_handler(
-            (CommandHandler("setemail", self.set_caurrier_callback))
-        )
+
+        """Prevent text command before keyboad commands when in inline mode.
+        Text command example: '/setname', '/setemail', '/setphonenumber' etc"""
+        if start_command:
+
+            if keyboad_command:
+
+                # Dispatches user details callbacks
+                self.dispatcher.add_handler(
+                    (CommandHandler("setname", self.set_name_callback))
+                )
+                self.dispatcher.add_handler(
+                    (CommandHandler("setemail", self.set_email_callback))
+                )
+                self.dispatcher.add_handler(
+                    (CommandHandler("setphonenumber", self.set_phone_callback))
+                )
+
+                # Dispatches user tracking details callbacks
+                self.dispatcher.add_handler(
+                    (CommandHandler("setitemname", self.set_item_name_callback))
+                )
+                self.dispatcher.add_handler(
+                    (
+                        CommandHandler(
+                            "settrackingnumber", self.set_tracking_number_callback
+                        )
+                    )
+                )
+                self.dispatcher.add_handler(
+                    (CommandHandler("setcaurrier", self.set_caurrier_callback))
+                )
+            else:
+                chat_id = self.bot.get_updates()
+                # self.bot.send_message(chat_id=chat_id, texg="I'm sorry but I can't do that")
+                print(chat_id)
 
     def start_client(self) -> None:
         """
