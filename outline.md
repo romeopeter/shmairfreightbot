@@ -18,8 +18,8 @@ Bot should be able to do the following:
     Tracking Details:
     ----------------
     + Tracking number
-    + Carrier name
-    + Item description
+    + Caurrier name
+    + Item name
 
 ## SOLUTION BREAKDOWN
 _As OOP_
