@@ -27,6 +27,7 @@ class Client(CommandHandlerCallbacks):
         None -- Nothing is returned
         """
 
+        super().__init__()
         self.token = token
         self.bot = Bot(token=self.token)
         self.updater = Updater(token=self.token, use_context=True)
@@ -54,22 +55,20 @@ class Client(CommandHandlerCallbacks):
         )
 
         # Shipment registeration command
+        self.dispatcher.add_handler((CommandHandler("setname", self.set_name_callback)))
         self.dispatcher.add_handler(
-            (CommandHandler("set_name", self.set_name_callback))
+            (CommandHandler("setemail", self.set_email_callback))
         )
         self.dispatcher.add_handler(
-            (CommandHandler("set_email", self.set_email_callback))
-        )
-        self.dispatcher.add_handler(
-            (CommandHandler("set_phone_number", self.set_phone_callback))
+            (CommandHandler("setphonenumber", self.set_phone_callback))
         )
 
         # Shipment tracking commands
         self.dispatcher.add_handler(
-            (CommandHandler("set_item_name", self.set_item_name_callback))
+            (CommandHandler("setitemname", self.set_item_name_callback))
         )
         self.dispatcher.add_handler(
-            (CommandHandler("set_tracking_number", self.set_tracking_number_callback))
+            (CommandHandler("settrackingnumber", self.set_tracking_number_callback))
         )
         self.dispatcher.add_handler(
             (CommandHandler("setcaurrier", self.set_caurrier_callback))
