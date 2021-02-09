@@ -11,10 +11,7 @@ class CommandHandlerCallbacks:
 
     def __init__(self):
         # Initiate register and tracking details dict
-        self.registeration_and_shipment_details: dict = {
-            "user_details": {},
-            "shipment_details": {},
-        }
+        self.shipment_details: dict = {}
 
     def start_callback(self, update, context) -> None:
         """Processes '/start' command from user"""
@@ -31,19 +28,14 @@ class CommandHandlerCallbacks:
             ]
         ]
 
-        # Check for update.
-        if update:
+        # Greet user
+        reply_text(f"Welcome {update.message.from_user.first_name} 👋")
 
-            # Greet user
-            reply_text(f"Welcome {update.message.from_user.first_name} 👋")
-
-            # Reply user with inline keyboard to selection options
-            reply_text(
-                "Do you want to register shipment or track shipment?\nUse the buttons below to answer👇",
-                reply_markup=InlineKeyboardMarkup(keyboard),
-            )
-
-            print(self.registeration_and_shipment_details)
+        # Reply user with inline keyboard to selection options
+        reply_text(
+            "Do you want to register shipment or track shipment?\nUse the buttons below to answer👇",
+            reply_markup=InlineKeyboardMarkup(keyboard),
+        )
 
     def inline_button_callback(self, update: Update, context: CallbackContext) -> None:
         """Defines which button was tapped on from what is assigned to 'callback-data' in 'InlineKeyboardButton' object"""
@@ -62,7 +54,7 @@ class CommandHandlerCallbacks:
     ) -> None:
         """Processes 'register_shipment' inline button command"""
 
-        text: str = """Good pick👍 \n\nI can help you create your shipment\n\nYou can control me by sending these commands:\n\n*User Details*\n /setname \- set your name\n/setemail \- Set your email address\n/setphonenumber \- Set your phone number\n/trackingnumber \- Set shipment tracking number\n/setcaurriername \- Set shipment caurrier name\n\n_Dont't want to register, but track shipment? use the /start command to select your option_"""
+        text: str = """Good pick👍 \n\nI can help you create your shipment\n\nYou can control me by sending these commands:\n\n*User Details*\n /setname \- set your [prefered] name\n/setemail \- Set your email address\n/setphonenumber \- Set your phone number\n/trackingnumber \- Set shipment tracking number\n/setcaurriername \- Set shipment caurrier name\n\n_Dont't want to register, but track shipment? use the /start command to select your option_"""
 
         update.callback_query.edit_message_text(text, parse_mode="MarkdownV2")
 
@@ -73,116 +65,95 @@ class CommandHandlerCallbacks:
 
         update.callback_query.edit_message_text(text, parse_mode="MarkdownV2")
 
-    # Collects user detatails
+    # Process user based commands
     def set_name_callback(self, update, context) -> None:
         """Process '/setname' command from user"""
 
-        if update:
-            try:
-                first_name = str(context.args[0]) or update.message.from_user.first_name
-                last_name = str(context.args[1]) or update.message.from_user.last_name
-                print(first_name, last_name)
+        try:
+            first_name = (
+                str(context.args[0]).strip() or update.message.from_user.first_name
+            )
+            last_name = (
+                str(context.args[1]).strip() or update.message.from_user.last_name
+            )
 
-                if first_name or last_name:
-                    update.message.reply_text(f"Hello {first_name}!")
+            if first_name or last_name:
+                update.message.reply_text(f"Hello {first_name}!")
 
-                    # Store name in
-                    self.registeration_and_shipment_details["user_details"][
-                        "first_name"
-                    ] = first_name
-                    self.registeration_and_shipment_details["user_details"][
-                        "last_name"
-                    ] = last_name
-                    return
-            except (ValueError, IndexError):
-                update.message.reply_text("/setname <first_name last_name>")
+                # Store name in
+                self.shipment_details["custormer_fname"] = first_name
+                self.shipment_details["customer_lname"] = last_name
+
+        except (ValueError, IndexError):
+            update.message.reply_text("/setname <first_name last_name>")
 
     def set_email_callback(self, update, context):
         """Process '/setemail' command from user"""
 
-        if update:
-            try:
-                user_email = context.args[0]
+        try:
+            user_email: str = str(context.args[0]).strip()
 
-                # Validate user email
-                email_regex = (
-                    "^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$"
-                    or "^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$"
+            # Validate user email
+            email_regex = (
+                "^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$"
+                or "^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$"
+            )
+
+            if self._validation_regex(email_regex, email_regex):
+                self.shipment_details["shipment_details"]["email"] = user_email
+            else:
+                update.message.reply_text(
+                    "Invalid email addresss!\n _hint: /setemail <info@domain.com>_",
+                    parse_mode="MarkdownV2",
                 )
-
-                if self._validation_regex(email_regex, email_regex):
-                    self.registeration_and_shipment_details["user_details"][
-                        "email"
-                    ] = user_email
-                else:
-                    update.message.reply_text(
-                        "Invalid email addresss!\n _hint: /setemail <info@domain.com>_",
-                        parse_mode="MarkdownV2",
-                    )
-            except Exception as e:
-                # update.message.reply_text("Awesome👍 Your detail has been set")
-                print(e)
+        except Exception as e:
+            # update.message.reply_text("Awesome👍 Your detail has been set")
+            print(e)
 
     def set_phone_callback(self, update, context) -> None:
         """Process '/setphonenumber' command from user"""
 
-        if update:
-            try:
-                user_phone_number = context.args[0]
+        try:
+            user_phone_number: str = str(context.args[0]).strip()
 
-                # Validate phone number
-                phone_regex = "((^+234)|[0-9]{11})"
+            # Validate phone number
+            phone_regex = "(|[0-9]{11})"
 
-                if self._validation_regex(phone_regex, user_phone_number):
-                    self.registeration_and_shipment_details["user_details"][
-                        "phone_number"
-                    ] = user_phone_number
-                else:
-                    update.message.reply_text(
-                        "Invalid phone number!\n _hint: /setemail <08XXXXXXXXX>_",
-                        parse_mode="MarkdownV2",
-                    )
-            except Exception as e:
-                print(e)
-                # update.message.reply_text("Awesome👍 Your detail has been set")
-
-    # Collects tracking details
-    def set_item_name_callback(self, update, context) -> None:
-        """Process '/setitemname' command from user"""
-
-        if update:
-            try:
-                item_name = str(context.args[0])
-                self.registeration_and_shipment_details["shipment_details"][
-                    "item_name"
-                ] = item_name
-            except Exception as e:
-                print(e)
-                # update.message.reply_text("/setname <first_name last_name>")
+            if self._validation_regex(phone_regex, user_phone_number):
+                self.shipment_details["customer_phone_number"] = user_phone_number
+            else:
+                update.message.reply_text(
+                    "Invalid phone number!\n _hint: /setemail <08XXXXXXXXX>_",
+                    parse_mode="MarkdownV2",
+                )
+        except Exception as e:
+            print(e)
+            # update.message.reply_text("Awesome👍 Your detail has been set")
 
     def set_tracking_number_callback(self, update, context) -> None:
         """Process '/settrackingnumber' command from user"""
 
-        if update:
-            try:
-                response = update.message.from_user.text
-                print(response)
-            except Exception as e:
-                print(e)
-                # update.message.reply_text("Awesome👍 Your detail has been set")
+        try:
+            tracking_id: str = str(context.args[0]).strip()
+            tracking_id_regex = ""
+            if self._validation_regex(tracking_id_regex, tracking_id):
+                self.shipment_details["tracking_id"] = tracking_id
+        except Exception as e:
+            print(e)
+            # update.message.reply_text(
+            #     "Invalid tracking id!\n _hint: /settrackingid <08XXXXXXXXX>_",
+            #     parse_mode="MarkdownV2",
+            # )
 
     def set_caurrier_callback(self, update, context) -> None:
         """Process '/setcaurrier' command from user"""
 
-        if update:
-            try:
-                caurrier_name = str(context.args[0])
-                self.registeration_and_shipment_details["shipment_details"][
-                    "caurrier_name"
-                ] = caurrier_name
-            except Exception as e:
-                print(e)
-                # update.message.reply_text("Awesome👍 Your detail has been set")
+        try:
+            caurrier_name = str(context.args[0]).strip()
+            self.shipment_details["shipment_details"]["caurrier_name"] = caurrier_name
+        except Exception as e:
+            print(e)
+            # update.message.reply_text("Awesome👍 Your detail has been set")
 
     def _validation_regex(self, pattern: str, string: str) -> bool:
         """Validate specific user input using regex"""
@@ -190,3 +161,9 @@ class CommandHandlerCallbacks:
             return True
         else:
             return False
+
+    def get_shipment_details(self) -> dict:
+        """ Checks if shipment details available, then return it."""
+        if self.shipment_details and len(self.shipment_details) == 6:
+            print(self.shipment_details)
+            return self.shipment_details
