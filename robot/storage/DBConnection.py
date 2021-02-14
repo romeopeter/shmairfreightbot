@@ -10,7 +10,7 @@ class Connection:
     Initializes the conection to postgresql database
     """
 
-    def __init__(self, host, database, user, password):
+    def __init__(self, host: str, database: str, user: str, password: str) -> None:
         self.host = host
         self.database = database
         self.user = user
@@ -43,32 +43,80 @@ class Connection:
         # Return the 'connection' object
         return conn
 
-    def execute_stmt(self, statement: str):
-        """Execute SQL statements"""
+    def create(self, statement: str) -> bool:
+        """Create data in database"""
+
+        conn = self._connect()
+
+        if conn is not None:
+            try:
+                # Create cursor
+                cursor = conn.cursor()
+
+                # Execute SQL statements
+                print("PostgreSQL database version:")
+                cursor.execute(statement)
+
+                return True
+            except Exception as error:
+                print(error)
+            finally:
+                # Committing tell the driver to send the command to the database
+                conn.close()
+
+        return False
+
+    def read(self, statement: str):
+        """Read database data"""
 
         conn = self._connect()
 
         # Check if connection object is returned
         if conn is not None:
 
-            # Create cursor
-            cursor = conn.cursor()
+            try:
+                # Create cursor
+                cursor = conn.cursor()
 
-            # Execute statement
-            print("PostgreSQL database version:")
-            cursor.execute(statement)
+                # Execute SQL statements
+                print("PostgreSQL database version:")
+                cursor.execute(statement)
 
-            # display the PostgreSQL database server version
-            DB_version = cursor.fetchone()
+                # display the PostgreSQL database server version
+                DB_version = cursor.fetchone()
 
-            print(DB_version)
+                print(DB_version)
 
-            # Close communication with postgre server
-            cursor.close()
-            conn.close()
+                # Return 'True' for succes and cursor object for further processing
+                return True, cursor
+            except Exception as error:
+                print(error)
+            finally:
+                # Close communication with postgre server
+                conn.close()
 
-            return True, cursor
+        return False
 
+    def update(self, statement: str) -> bool:
+        """Update databse data"""
+        conn = self._connect()
+
+        if conn is not None:
+            try:
+                # Create cursor
+                cursor = conn.cursor()
+
+                # Execute SQL statements
+                cursor.execute(statement)
+                cursor.commit()
+
+                print("Total updated row:", cursor.rowcount)
+                return True
+            except Exception as error:
+                print(error)
+            finally:
+                print("Database updated successfully")
+                conn.close()
         return False
 
 
