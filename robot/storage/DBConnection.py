@@ -3,6 +3,9 @@ from psycopg2 import DatabaseError
 
 from decouple import config
 
+from typing import Tuple
+from typing import Any
+
 
 class Connection:
     """
@@ -11,13 +14,36 @@ class Connection:
     """
 
     def __init__(self, host: str, database: str, user: str, password: str) -> None:
+        """
+        Parameters
+        ----------
+        host: str -- Database host.
+
+        datanse: str -- Name of database to use, for example postgreSQL.
+
+        user: str -- Database username. username can be superuser.
+
+        password: str -- Password to access database.
+
+        Return
+        ------
+        None -- Nothing is returned
+        """
+
         self.host = host
         self.database = database
         self.user = user
         self.password = password
 
-    def _connect(self):
-        """Connect to postgre sql database"""
+    def _connect(self) -> None:
+        """
+        NOTE: private method.
+        Makes a connection to the postgreSQL database.
+
+        Returns
+        ------
+        None -- Nothing is returned.
+        """
 
         conn = None
 
@@ -44,8 +70,19 @@ class Connection:
         return conn
 
     def create(self, statement: str) -> bool:
-        """Create data in database"""
+        """
+        Create data in database.
 
+        Parameter
+        ---------
+        statement: str -- The 'CREATE' command to execute
+
+        Return
+        ------
+        bool -- Return 'True' if successful or 'False' if not sucessful.
+        """
+
+        # Call method to connect to database
         conn = self._connect()
 
         if conn is not None:
@@ -66,8 +103,18 @@ class Connection:
 
         return False
 
-    def read(self, statement: str):
-        """Read database data"""
+    def read(self, statement: str) -> Tuple[bool, Any]:
+        """
+        Read database data
+
+        Parameter
+        ---------
+        statemtemt: str -- The 'READ' command to execute
+
+        Return
+        ------
+        Tuple[bool, Any] -- Return 'True' and 'cursor' object if successful or 'False' and 'None' if not sucessful.
+        """
 
         conn = self._connect()
 
@@ -95,10 +142,20 @@ class Connection:
                 # Close communication with postgre server
                 conn.close()
 
-        return False
+        return False, None
 
     def update(self, statement: str) -> bool:
-        """Update databse data"""
+        """
+        Update databse data.
+
+        Parameter
+        ---------
+        statemtemt: str -- The 'UPDATE' command to execute
+
+        Return
+        ------
+        bool -- Return 'True' if successful or 'False' if not sucessful.
+        """
         conn = self._connect()
 
         if conn is not None:
