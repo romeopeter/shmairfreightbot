@@ -91,21 +91,23 @@ class Connection:
                 cursor = conn.cursor()
 
                 # Execute SQL statements
-                print("PostgreSQL database version:")
                 cursor.execute(statement)
+
+                print("Table created successfully")
 
                 return True
             except Exception as error:
                 print(error)
             finally:
                 # Committing tell the driver to send the command to the database
+                conn.commit()
                 conn.close()
 
         return False
 
     def read(self, statement: str) -> Tuple[bool, Any]:
         """
-        Read database data
+        Read database data.
 
         Parameter
         ---------
@@ -141,12 +143,13 @@ class Connection:
             finally:
                 # Close communication with postgre server
                 conn.close()
+                print("Connection to database closed")
 
         return False, None
 
     def update(self, statement: str) -> bool:
         """
-        Update databse data.
+        Update database data.
 
         Parameter
         ---------
@@ -165,14 +168,16 @@ class Connection:
 
                 # Execute SQL statements
                 cursor.execute(statement)
-                cursor.commit()
+
+                print("Database updated successfully\n")
 
                 print("Total updated row:", cursor.rowcount)
                 return True
             except Exception as error:
                 print(error)
             finally:
-                print("Database updated successfully")
+                print("Connection to database closed")
+                conn.commit()
                 conn.close()
         return False
 
@@ -185,4 +190,23 @@ if __name__ == "__main__":
         password=config("PASSWORD", cast=str),
     )
 
-    connect_db.execute_stmt("SELECT  version()")
+    create_table = connect_db.create(
+        """CREATE TABLE shipment_details
+        (id serial PRIMARY KEY NOT NULL,
+        name CHAR(20) NOT NULL,
+        email CHAR(50) NOT NULL,
+        phone_number char(20) NOT NULL,
+        item_name CHAR(20) NOT NULL,
+        caurrier_name CHAR(20) NOT NULL),
+        tracking_id;"""
+    )
+
+    if create_table:
+        connect_db.create(
+            """INSERT INTO shipment_details
+            (name, email, phone_number, item_name, caurrier_name)
+            VALUES
+            ('John Doe', 'john@doe.com', '07023232323', 'Dell xps 13', 'fedex');"""
+        )
+
+    # NEXT: create complete shipment details tables
