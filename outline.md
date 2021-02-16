@@ -17,8 +17,8 @@ Bot should be able to do the following:
 2 Regiter shipment detail for tracking
     Tracking Details:
     ----------------
-    - Tracking number
     - Caurrier name
+    - shipment tracking id
 
 3 Notify users of shipment: recieve shipment tracking data and notify users. Track (tracking is for US shipments only) items till it reaches destination (Nigeria)
 
@@ -30,9 +30,9 @@ _Solution is broken down to OOP procedure_
  _Telegram client interface for user. Represents the highest hierarchy of objects_
 
     - tClient
-        + Connects telegram API
-        + Ask user whether to register or track shipment.
-        + Collects shipment details (Name, phone number, email)
+        + Connects telegram API [done]
+        + Ask user whether to register or track shipment [done].
+        + Collects shipment registeration details (Name, phone number, email etc)
             * Sending details to 'Store' object to for database storage
         + Collect tracking details (tracking number, caurrier name)
             * Cross-check data with what's stored in DB
