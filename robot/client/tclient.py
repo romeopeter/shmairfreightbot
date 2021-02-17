@@ -69,7 +69,10 @@ class Client(CommandHandlerCallbacks):
             (CommandHandler("settrackingnumber", self.set_tracking_number_callback))
         )
         self.dispatcher.add_handler(
-            (CommandHandler("setcaurrier", self.set_caurrier_callback))
+            (CommandHandler("setcarrier", self.set_carrier_callback))
+        )
+        self.dispatcher.add_handler(
+            (CommandHandler("setaddress", self.set_address_callback))
         )
 
     def start_client(self) -> None:
