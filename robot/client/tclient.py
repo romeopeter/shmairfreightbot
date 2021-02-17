@@ -3,9 +3,7 @@ from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import CallbackQueryHandler
 
-from decouple import config
-
-from callback import CommandHandlerCallbacks
+from robot.client.callback import CommandHandlerCallbacks
 
 
 class Client(CommandHandlerCallbacks):
@@ -89,15 +87,3 @@ class Client(CommandHandlerCallbacks):
     def stop_client(self):
         # Stop client from running when the Ctrl + c signal is detected
         self.updater.idle()
-
-
-if __name__ == "__main__":
-    tclient = Client(token=config("TELEGRAM_API_TOKEN", cast=str))
-
-    print("Starting Bot...")
-
-    # Start client
-    tclient.start_client()
-
-    # Start client
-    tclient.stop_client()
