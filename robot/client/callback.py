@@ -5,6 +5,8 @@ from telegram import InlineKeyboardButton
 
 import re
 
+from json import dump
+
 
 class CommandHandlerCallbacks:
     """Mix-in classes defines Telegram client callback methods"""
@@ -54,14 +56,14 @@ class CommandHandlerCallbacks:
     ) -> None:
         """Processes 'register_shipment' inline button command"""
 
-        text: str = """Good pick👍 \n\nI can help you create your shipment\n\nYou can control me by sending these commands:\n\n*User Details*\n /setname \- set your [prefered] name\n/setemail \- Set your email address\n/setphonenumber \- Set your phone number\n/trackingnumber \- Set shipment tracking number\n/setcaurriername \- Set shipment caurrier name\n\n_Dont't want to register, but track shipment? use the /start command to select your option_"""
+        text: str = """Good pick👍 \n\nI can help you create your shipment\n\nYou can control me by sending these commands:\n\n*User Details*\n /setname \- set your [prefered] name\n/setemail \- Set your email address\n/setphonenumber \- Set your phone number\n/setitemname \- Site item name\n/trackingnumber \- Set shipment tracking number\n/setcarriername \- Set shipment carrier name\n\n_Dont't want to register, but track shipment? use the /start command to select your option_"""
 
         update.callback_query.edit_message_text(text, parse_mode="MarkdownV2")
 
     def track_shipment_callback(self, update: Update, context: CallbackContext) -> None:
         """Processes 'track_shipment' inline button command"""
 
-        text: str = """Good pick👍 \n\nI can help you track your shipment\n\nYou can control me by sending these commands:\n\n*Tracking Details*\n/settrackingnumber \- Set shipment tracking number\n/setcaurrier \- Set caurrier name\n\n_Dont't want to track, but register shipment? use the /start command to select your option_"""
+        text: str = """Good pick👍 \n\nI can help you track your shipment\n\nYou can control me by sending these commands:\n\n*Tracking Details*\n/settrackingnumber \- Set shipment tracking number\n/setcaurrier \- Set caurrier name\n/setaddress \- Set delivery address\n\n_Dont't want to track, but register shipment? use the /start command to select your option_"""
 
         update.callback_query.edit_message_text(text, parse_mode="MarkdownV2")
 
@@ -70,19 +72,15 @@ class CommandHandlerCallbacks:
         """Process '/setname' command from user"""
 
         try:
-            first_name = (
+            customer_name = (
                 str(context.args[0]).strip() or update.message.from_user.first_name
             )
-            last_name = (
-                str(context.args[1]).strip() or update.message.from_user.last_name
-            )
 
-            if first_name or last_name:
-                update.message.reply_text(f"Hello {first_name}!")
+            if customer_name:
+                update.message.reply_text(f"Hello {customer_name}!")
 
                 # Store name in
-                self.shipment_details["custormer_fname"] = first_name
-                self.shipment_details["customer_lname"] = last_name
+                self.shipment_details["custormer_name"] = customer_name
 
         except (ValueError, IndexError):
             update.message.reply_text("/setname <first_name last_name>")
@@ -130,6 +128,22 @@ class CommandHandlerCallbacks:
             print(e)
             # update.message.reply_text("Awesome👍 Your detail has been set")
 
+    def set_item_name_callback(self, update, context):
+        """Process '/setitemname' command"""
+        try:
+            item_name: str = str(context.args[0]).strip()
+
+            if item_name:
+                self.shipment_details["item_name"] = item_name
+            else:
+                update.message.reply_text(
+                    "Item name not set!\n _hint: /setemail <package name>_",
+                    parse_mode="MarkdownV2",
+                )
+        except Exception as e:
+            print(e)
+            # update.message.reply_text("Awesome👍 Your detail has been set")
+
     def set_tracking_number_callback(self, update, context) -> None:
         """Process '/settrackingnumber' command from user"""
 
@@ -145,12 +159,38 @@ class CommandHandlerCallbacks:
             #     parse_mode="MarkdownV2",
             # )
 
-    def set_caurrier_callback(self, update, context) -> None:
-        """Process '/setcaurrier' command from user"""
+    def set_carrier_callback(self, update, context) -> None:
+        """Process '/setcarrier' command from user"""
 
         try:
-            caurrier_name = str(context.args[0]).strip()
-            self.shipment_details["shipment_details"]["caurrier_name"] = caurrier_name
+            carrier_name = str(context.args[0]).strip()
+            self.shipment_details["shipment_details"]["carrier_name"] = carrier_name
+        except Exception as e:
+            print(e)
+            # update.message.reply_text("Awesome👍 Your detail has been set")
+
+    def set_address_callback(self, update, context) -> None:
+        """Process '/setaddress' command"""
+        try:
+            company = str(context.args[0]).strip() or ""
+            street = str(context.args[1]).strip() or ""
+            city = str(context.args[2]).strip() or ""
+            state = str(context.args[3]).strip() or ""
+            zip_code = str(context.args[4]).strip() or ""
+
+            if company or street or city or state or zip_code:
+                self.shipment_details["shipment_details"]["addresss"] = {
+                    "company": company,
+                    "street": street,
+                    "city": city,
+                    "state": state,
+                    "zip_code": zip_code,
+                }
+            else:
+                update.message.reply_text(
+                    "Address not set!\n _hint: /setaddress <company street city state zip_code>_",
+                    parse_mode="MarkdownV2",
+                )
         except Exception as e:
             print(e)
             # update.message.reply_text("Awesome👍 Your detail has been set")
@@ -164,6 +204,6 @@ class CommandHandlerCallbacks:
 
     def get_shipment_details(self) -> dict:
         """ Checks if shipment details available, then return it."""
-        if self.shipment_details and len(self.shipment_details) == 6:
+        if self.shipment_details and len(self.shipment_details) == 7:
             print(self.shipment_details)
             return self.shipment_details
