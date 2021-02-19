@@ -48,12 +48,12 @@ class Client(CommandHandlerCallbacks):
         # Dispatch command to handlers
 
         self.dispatcher.add_handler((CommandHandler("start", self.start_callback)))
+        self.dispatcher.add_handler((CommandHandler("help", self.help_callback)))
         self.dispatcher.add_handler(
             CallbackQueryHandler(self.inline_button_callback, pass_user_data=True)
         )
 
         # Shipment registeration command
-        self.dispatcher.add_handler((CommandHandler("setname", self.set_name_callback)))
         self.dispatcher.add_handler(
             (CommandHandler("setemail", self.set_email_callback))
         )
@@ -69,7 +69,7 @@ class Client(CommandHandlerCallbacks):
             (CommandHandler("settrackingnumber", self.set_tracking_number_callback))
         )
         self.dispatcher.add_handler(
-            (CommandHandler("setcarrier", self.set_carrier_callback))
+            (CommandHandler("setcarriername", self.set_carrier_callback))
         )
         self.dispatcher.add_handler(
             (CommandHandler("setaddress", self.set_address_callback))
