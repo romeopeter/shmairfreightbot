@@ -1,19 +1,29 @@
+import sys
+
+import re
+
+from typing import Any
+
 from telegram import Update
 from telegram.ext import CallbackContext
 from telegram import InlineKeyboardMarkup
 from telegram import InlineKeyboardButton
 
-from json import dump
+from decouple import config
 
-import re
+from robot.storage.dbconnection import Connection
 
 
 class CommandHandlerCallbacks:
     """Mix-in classes defines Telegram client callback methods"""
 
-    def __init__(self):
-        # Initiate register and tracking details dict
-        self.shipment_details: dict = {}
+    @staticmethod
+    def shipment_details(key: str = "status", value: Any = None):
+        """Initiate register details. This is a class attribute rather than an attribute of the instance of the class"""
+        details: dict = {}
+        details[key] = value
+
+        return details
 
     def start_callback(self, update, context) -> None:
         """Processes '/start' command from user"""
@@ -36,9 +46,8 @@ class CommandHandlerCallbacks:
             reply_text(f"Hello {update.message.from_user.first_name} 👋")
 
             # Store name
-            self.shipment_details["custormer_name"] = customer_name
-
-            print(self.shipment_details)
+            self.shipment_details(key="status", value="updated")
+            self.shipment_details(key="custormer_name", value=customer_name)
 
             # Reply user with inline keyboard to selection options
             reply_text(
@@ -92,7 +101,7 @@ class CommandHandlerCallbacks:
             )
 
             if self._validation_regex(email_regex, user_email):
-                self.shipment_details["email"] = user_email
+                self.shipment_details(key="email", value=user_email)
                 reply_text("Success! Email set. /help")
             else:
                 reply_text(
@@ -119,7 +128,9 @@ class CommandHandlerCallbacks:
             phone_regex = "([0-9]{11})"
 
             if self._validation_regex(phone_regex, user_phone_number):
-                self.shipment_details["customer_phone_number"] = user_phone_number
+                self.shipment_details(
+                    key="customer_phone_number", value=user_phone_number
+                )
                 reply_text("Success! Phone number set. /help")
             else:
                 reply_text(
@@ -140,7 +151,7 @@ class CommandHandlerCallbacks:
 
         try:
             item_name: str = str(context.args[0]).strip()
-            self.shipment_details["item_name"] = item_name
+            self.shipment_details(key="item_name", value=item_name)
 
             reply_text("Success! Item name set. /help")
         except (IndexError, ValueError) as e:
@@ -159,7 +170,7 @@ class CommandHandlerCallbacks:
 
         try:
             tracking_id = str(context.args[0]).strip()
-            self.shipment_details["tracking_id"] = tracking_id
+            self.shipment_details(key="tracking_id", value=tracking_id)
 
             reply_text("Success! Tracking number set. /help")
         except (IndexError, ValueError) as e:
@@ -175,7 +186,7 @@ class CommandHandlerCallbacks:
 
         try:
             carrier_name = str(context.args[0]).strip()
-            self.shipment_details["carrier_name"] = carrier_name
+            self.shipment_details(key="carrier_name", value=carrier_name)
 
             reply_text("Success! Carrier name set. /help")
         except (ValueError, IndexError) as e:
@@ -197,7 +208,8 @@ class CommandHandlerCallbacks:
             zip_code = str(context.args[4]).strip() or ""
 
             if company or street or city or state or zip_code:
-                self.shipment_details["addresss"] = {
+
+                address = {
                     "company": company,
                     "street": street,
                     "city": city,
@@ -205,9 +217,9 @@ class CommandHandlerCallbacks:
                     "zip_code": zip_code,
                 }
 
-                reply_text("Success! Address set. /help")
+                self.shipment_details(key="addresss", value=address)
 
-                print(self.shipment_details)
+                reply_text("Success! Address set. /help")
 
                 return
         except (ValueError, IndexError) as e:
@@ -232,13 +244,24 @@ class CommandHandlerCallbacks:
         else:
             return False
 
-    def _parse_markdown_symbols(self, response: str) -> None:
-        """This method escape all markdown with a back-slash \ to prevent error wheb parsing markdown"""
-
-        pass
-
-    def get_shipment_details(self) -> dict:
+    def return_shipment_details(self) -> dict:
         """ Checks if shipment details available, then return it."""
-        if self.shipment_details and len(self.shipment_details) == 7:
-            print(self.shipment_details)
-            return self.shipment_details
+        return self.shipment_details()
+
+    def store_details(self) -> Connection:
+        """
+        Initializes and returns 'Connection' object to connect to database
+
+        Returns
+        -------
+        Connection: object -- Return 'Connection' object
+        """
+
+        connect_db = Connection(
+            host=config("HOST", cast=str),
+            database=config("DATABASE", cast=str),
+            user=config("USER", cast=str),
+            password=config("PASSWORD", cast=str),
+        )
+
+        return connect_db
