@@ -24,23 +24,10 @@ class Client(CommandHandlerCallbacks):
         -------
         None -- Nothing is returned
         """
-
         super().__init__()
         self.token = token
-        self.bot = Bot(token=self.token)
         self.updater = Updater(token=self.token, use_context=True)
         self.dispatcher = self.updater.dispatcher
-
-    def get_me(self) -> dict:
-        """
-        Tests Bot's auth token.
-
-        Returns
-        -------
-        dict -- Dictionary filled with Bot's auth details
-        """
-
-        return self.bot.get_me()
 
     def set_dispatchers(self) -> None:
         """Dispatcher fetches update and dispatches them to 'CommandHandler' object. 'CommandHandler' object calls the required callback for the command."""
