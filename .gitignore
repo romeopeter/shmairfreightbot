@@ -9,6 +9,7 @@ outline.md
 __pycache__/
 *.py[cod]
 *$py.class
+__init__.py
 
 # C extensions
 *.so
@@ -68,6 +69,7 @@ pytestdebug.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+database_query.sql
 
 # Flask stuff:
 instance/
