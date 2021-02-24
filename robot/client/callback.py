@@ -222,17 +222,17 @@ class CommandHandlerCallbacks:
             zip_code = str(context.args[4]).strip() or ""
 
             # Store address
-            company_string,
-            stree_stringt,
-            city_string,
-            state_string,
-            zip_code_string = (
+            company,
+            street,
+            city,
+            state,
+            zip_code = list(
             self._remove_double_quotes(company, street, city, state, zip_code)
             )
 
-            if company_string or stree_stringt or city_string or state_string or zip_code_string:
+            if company or street or city or state or zip_code:
                 store_address = self._store.create(
-                    f"INSERT INTO address (street,city,state,zip_code,company) VALUES ({street_string},{city_string},{state_string},{zip_code_string},{company_string});"
+                    f"INSERT INTO address (street,city,state,zip_code,company) VALUES ({street},{city},{state},{zip_code},{company});"
                 )
 
                 if store_address:
