@@ -24,7 +24,10 @@ class Client(CommandHandlerCallbacks):
         -------
         None -- Nothing is returned
         """
+
+        # Initializes parant class
         super().__init__()
+
         self.token = token
         self.updater = Updater(token=self.token, use_context=True)
         self.dispatcher = self.updater.dispatcher
