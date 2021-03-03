@@ -17,7 +17,7 @@ from robot.storage.dbconnection import Connection
 
 
 class CommandHandlerCallbacks:
-    """Mix-in classes defines Telegram client callback methods"""
+    """Class holds all Telegram client callback methods"""
 
     def __init__(self) -> None:
         self._store = self._access_db()
@@ -95,14 +95,14 @@ class CommandHandlerCallbacks:
     ) -> None:
         """Processes 'register_shipment' inline button command"""
 
-        text: str = """Good pick👍 \n\nI can help you create your shipment\n\nYou can control me by sending these commands:\n\n*User Details*\n /setemail \- Set your email address\n/setphonenumber \- Set your phone number\n/setitemname \- Site item name\n/settrackingnumber \- Set shipment tracking number\n/setcarriername \- Set shipment carrier name\n/setaddress \- Set delivery address\n\n_Dont't want to register, but track shipment? use the /start command to select your option_"""
+        text: str = """Good pick👍 \n\nI can help you create your shipment\n\nYou can control me by sending these commands\.\n\n*Commands:*\n /setemail \- Set your email address\n/setphonenumber \- Set your phone number\n/setitemname \- Site item name\n/settrackingnumber \- Set shipment tracking number\n/setcarriername \- Set shipment carrier name\n/setaddress \- Set delivery address\n\n_Dont't want to register, but track shipment? use the /start command to select your option_"""
 
         update.callback_query.edit_message_text(text, parse_mode="MarkdownV2")
 
     def track_shipment_callback(self, update: Update, context: CallbackContext) -> None:
         """Processes 'track_shipment' inline button command"""
 
-        text: str = """Good pick👍 \n\nI can help you track your shipment\n\nYou can control me by sending these commands:\n\n*Tracking Details*\n/settrackingnumber \- Set shipment tracking number\n/setcarriername \- Set caurrier name\n\n_Dont't want to track, but register shipment? use the /start command to select your option_"""
+        text: str = """Good pick👍 \n\nI can help you track your shipment\n\nYou can control me by sending these commands:\n\n*Commands:*\n/settrackingnumber \- Set shipment tracking number\n/setcarriername \- Set caurrier name\n\n_Dont't want to track, but register shipment? use the /start command to select your option_"""
 
         update.callback_query.edit_message_text(text, parse_mode="MarkdownV2")
 
@@ -316,7 +316,7 @@ class CommandHandlerCallbacks:
 
         except (ValueError, IndexError) as e:
             print(e)
-            error_response = """Address not set\!\n Hint: /setaddress _company street city state zip\_code _\n Note: _Use \- instead of space to seperate longer words\. e\.g\: "1st\-Avenue" instead of "1st Avenue\."\n I need your address to deliver your packge\. Dont't forget to provide all of them ☺_"""
+            error_response = """Address not set\!\n Hint: /setaddress _company street city state zip\_code _\n Note: _Use \- instead of space to seperate longer words\. e\.g\: "1st\-Avenue" instead of "1st Avenue\."\n I need your address to deliver your packge\. Dont't forget to provide all of them 📝"""
 
             reply_text(error_response, parse_mode="MarkdownV2")
 
@@ -325,7 +325,7 @@ class CommandHandlerCallbacks:
 
         if update:
 
-            help_guide = """Glad to help\!\n\nYou can control me by sending these commands:\n\n*Register shipment*\n /setemail \- Set your email address\n/setphonenumber \- Set your phone number\n/setitemname \- Site item name\n/settrackingnumber \- Set shipment tracking number\n/setcarriername \- Set shipment carrier name\n/setaddress \- Set delivery address\n\n_Dont't want to register, but track shipment? use the /start command to select your option_"""
+            help_guide = """Glad to help\!\n\nRegister shipment by sending these commands:\n\n*Commands*\n /setemail \- Set your email address\n/setphonenumber \- Set your phone number\n/setitemname \- Site item name\n/setcarriername \- Set shipment carrier name\n/settrackingnumber \- Set shipment tracking number\n/setaddress \- Set delivery address\n\n_Dont't want to register, but track shipment? use the /start command to select your option_"""
 
             update.message.reply_text(help_guide, parse_mode="MarkdownV2")
 
