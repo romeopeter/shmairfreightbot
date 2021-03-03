@@ -20,8 +20,12 @@ class CommandHandlerCallbacks:
     """Mix-in classes defines Telegram client callback methods"""
 
     def __init__(self) -> None:
-        self._store = self.store_details()
+        self._store = self._access_db()
 
+        self.user_db_details = {"shipment": {}}
+
+        # Customer will be used to checj if shipment details are set
+        self._customer_name = None
 
     def start_callback(self, update, context) -> None:
         """Processes '/start' command from user"""
@@ -39,19 +43,33 @@ class CommandHandlerCallbacks:
             ]
         ]
 
-        # Greet user
-        reply_text(f"Hello {update.message.from_user.first_name} 👋")
-
         customer_name = self._remove_double_quotes(customer_name)
 
-        # Store name
-        statement = SQL("INSERT INTO shipment ({}) VALUES (%s)")
-        store_name = self._store.create(
-            statement=statement,
-            values= {"table_column":'name', "column_value":customer_name}
+        # Assign to constructor '_customer_name' value
+        self._customer_name = customer_name
+
+        # Prepare query to check for name
+        get_name_query = "SELECT name FROM shipment WHERE name = %s;"
+        name_is_stored, name_row = self._store.read(
+            statement=get_name_query,
+            values={"column_value":customer_name}
         )
 
-        if store_name:
+        # Check if name is already stored
+        if name_is_stored and len(name_row) >= 1:
+            print(f"user {customer_name} exits in database")
+            # Name is stored. Reply user
+            reply_text(
+                "Do you want to register shipment or track shipment?\nUse the buttons below to answer👇",
+                reply_markup=InlineKeyboardMarkup(keyboard),
+            )
+        else:
+            # Name is not stored. Store name
+            self.user_db_details["shipment"]["name"] = customer_name
+
+            # Greet user
+            reply_text(f"Hello {update.message.from_user.first_name} 👋")
+
             # Reply user with inline keyboard to selection options
             reply_text(
                 "Do you want to register shipment or track shipment?\nUse the buttons below to answer👇",
@@ -108,15 +126,10 @@ class CommandHandlerCallbacks:
 
                 user_email = self._remove_double_quotes(user_email)
 
-                # Store email
-                statement = SQL("INSERT INTO shipment ({}) VALUES (%s)")
-                store_email = self._store.create(
-                    statement=statement,
-                    values={"table_column":'email',"column_value":user_email}
-                )
+                # Email is not stored. Store Email.
+                self.user_db_details["shipment"]["email"] = user_email
 
-                if store_email:
-                    reply_text("Success! Email set. /help")
+                reply_text("Success! Email set. Don't forget to set phone number. /help")
             else:
                 reply_text(
                     "Invalid email addresss\!\n hint: /setemail _info@domain\.com_",
@@ -140,18 +153,10 @@ class CommandHandlerCallbacks:
 
                 phone_number = self._remove_double_quotes(phone_number)
 
-                # Store phone number
-                statement = SQL("INSERT INTO shipment ({}) VALUES (%s)")
-                store_pnumber = self._store.create(
-                    statement=statement,
-                    values={
-                        "table_column":'phone_number',
-                        "column_value":phone_number
-                    }
-                )
+                # Phone is not stored. Store name
+                self.user_db_details["shipment"]["phone_number"] = phone_number
 
-                if store_pnumber:
-                    reply_text("Success! Phone number set. /help")
+                reply_text("Success! Phone number set. /help")
             else:
                 reply_text(
                     "Invalid phone number\!\n hint: /setphonenumber _081XXXXXX00_",
@@ -172,15 +177,11 @@ class CommandHandlerCallbacks:
 
             item_name = self._remove_double_quotes(item_name)
 
-            # Store item name
-            statement = SQL("INSERT INTO shipment ({}) VALUES (%s)")
-            store_item = self._store.create(
-                statement=statement,
-                values={"table_column":'item_name', "column_value":item_name}
-            )
+            # Item is not stored. Store Item
+            self.user_db_details["shipment"]["item_name"] = item_name
 
-            if store_item:
-                reply_text("Success! Item name set. /help")
+
+            reply_text("Awesome! Item name set. Don't forget to set tracking ID and carrier name  too. /help")
 
         except (IndexError, ValueError):
             reply_text(
@@ -196,15 +197,12 @@ class CommandHandlerCallbacks:
             carrier_name = str(context.args[0]).strip()
             carrier_name = self._remove_double_quotes(carrier_name)
 
-            # Store carrier
-            statment = SQL("INSERT INTO shipment ({}) VALUES (%s)")
-            store_carrier = self._store.create(
-                statement=statment,
-                values={"table_column":'carrier', "column_value":carrier_name}
-            )
 
-            if store_carrier:
-                reply_text("Success! Carrier name set. /help")
+            # Carrier name is not stored. Store Carrier name
+            self.user_db_details["shipment"]["carrier"] = carrier_name
+
+
+            reply_text("Success! Carrier name set. /help")
         except (ValueError, IndexError):
             error_response = """Carrier name not set\.\n hint: /setcarriername _shipment tracking number_"""
 
@@ -221,18 +219,11 @@ class CommandHandlerCallbacks:
             tracking_id = str(context.args[0]).strip()
             tracking_id = self._remove_double_quotes(tracking_id)
 
-            # Store tracking id
-            statment = SQL("INSERT INTO shipment ({}) VALUES (%s)")
-            store_tracking_id = self._store.create(
-                statement=statment,
-                values={
-                    "table_column":'tracking_id',
-                    "column_value":tracking_id
-                }
-            )
+            # Name is not stored. Store name
+            self.user_db_details["shipment"]["tracking_id"] = tracking_id
 
-            if store_tracking_id:
-                reply_text("Success! Tracking number set. /help")
+
+            reply_text("Success! Tracking number set. Lastly, register your address 🏠 /help")
         except (IndexError, ValueError):
 
             error_response = """Tracking id not set or Invalid id\!\n hint: /settrackingnumber _shipment tracking number_"""
@@ -244,51 +235,88 @@ class CommandHandlerCallbacks:
 
         reply_text = update.message.reply_text
 
-        try:
-            company = str(context.args[0]).strip()
-            street = str(context.args[1]).strip()
-            city = str(context.args[2]).strip()
-            state = str(context.args[3]).strip()
-            zip_code = str(context.args[4]).strip()
 
-            company,
-            street,
-            city,
-            state,
-            zip_code = (
-                self._remove_double_quotes(company, street, city, state, zip_code)
+        # Prepare query to check if shipment is stored
+        get_name_query = ("""SELECT
+        'name', 'email', 'phone_number', 'item_name', 'carrier', 'tracking_id' FROM shipment
+                WHERE name = %s;"""
+        )
+
+        # use '_customer_name' in constructor as column to test if shipmen detail exist
+        shipment_is_stored, rows = self._store.read(
+            statement=get_name_query,
+            values={"column_value": self._customer_name}
+        )
+
+        # Checke if shipment is stored
+        if shipment_is_stored:
+            print("Shipment detail exists in database")
+        else:
+            # Send all shipment details to database
+            if len(self.user_db_details["shipment"]) == 6:
+                statment = SQL("""INSERT INTO shipment
+                    ({}, {}, {}, {}, {}, {})
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """)
+
+                store_tracking_id = self._store.create(
+                    statement=statment,
+                    values={
+                        "table_column": [
+                            column for column in self.user_db_details.keys()
+                        ],
+                        "column_value": [
+                            value for value in self.user_db_details.values()
+                        ]
+                    }
+                )
+
+                print("Shipment details created" if store_tracking_id else "Shipment details not created")
+
+        # Send all address details to database
+        try:
+            double_quote_company_name = str(context.args[0]).strip()
+            double_quote_street_name = str(context.args[1]).strip()
+            double_quote_city_name = str(context.args[2]).strip()
+            double_quote_state_name = str(context.args[3]).strip()
+            double_quote_zip_code_name = str(context.args[4]).strip()
+
+            # Postgres only accepts single quote as column values
+            single_quotes_column_values = self._remove_double_quotes(
+                double_quote_company_name,
+                double_quote_street_name,
+                double_quote_city_name,
+                double_quote_state_name,
+                double_quote_zip_code_name
             )
 
-            if company and street and city and state and zip_code:
-                print(company,street,city,state,zip_code)
+            # Table columns
+            table_columns = ['company', 'street', 'city', 'state', 'zip_code']
 
-                # Store address
+            if (single_quotes_column_values):
                 statment = SQL(
-                    """INSERT INTO shipment ({},{},{},{},{})
+                    """INSERT INTO address ({},{},{},{},{})
                     VALUES (%s, %s, %s, %s, %s)"""
                 )
 
                 store_address = self._store.create(
                     statement=statment,
                     values={
-                        "table_columns": [
-                            'company',
-                            'street',
-                            'city',
-                            'state',
-                            'zip_code'
+                        "table_column": [
+                            column for column in table_columns
                         ],
-                        "column_values": [company,street,city,state,zip_code]
+                        "column_value": [
+                            value for value in single_quotes_column_values
+                        ]
                     }
                 )
 
                 if store_address:
                     reply_text("Success! Address set. /help")
 
-                return
         except (ValueError, IndexError) as e:
             print(e)
-            error_response = """Address not set\!\n Hint: /setaddress _company street city state zip\_code _\n Note: _Use \- instead of space to seperate longer words\. e\.g\: "1st\-Avenue" instead of "1st Avenue"_"""
+            error_response = """Address not set\!\n Hint: /setaddress _company street city state zip\_code _\n Note: _Use \- instead of space to seperate longer words\. e\.g\: "1st\-Avenue" instead of "1st Avenue\."\n I need your address to deliver your packge\. Dont't forget to provide all of them ☺_"""
 
             reply_text(error_response, parse_mode="MarkdownV2")
 
@@ -308,7 +336,7 @@ class CommandHandlerCallbacks:
         else:
             return False
 
-    def store_details(self) -> Connection:
+    def _access_db(self) -> Connection:
         """
         Initializes and returns 'Connection' object to connect to database
 
