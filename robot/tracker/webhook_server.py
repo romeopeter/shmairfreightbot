@@ -22,14 +22,21 @@ def process_webhook():
         event = easypost.Event.recieve(request.data)
         tracker = event.result
 
-        # Check delivery status on package and update customer accordingly
+        # Checks delivery status and updates customer via SMS.
         message = ""
         if tracker.status == "delivered":
-            message += "Your package has been delivered\n"
+            message += f"Your package has been delivered\nPackage signed by {tracker.signed_by}"
+        elif tracker.status == "in_transit":
+            for tracking_details in tracker.details:
+                if tracking_detail.messsage == "ARRIVAL SCAN":
+                    message = (
+                        +f"Hi,\n Your packag has arrived in {tracking_details.tracking_location.city}\n\n. Package signed by {tracker.signed_by}\n\n Click the link for live tracking: {tracker.public_url}"
+                    )
+                    break
         else:
             for tracking_details in tracker.tracking_details:
                 if tracking_details.status == tracker.status:
-                    message += f"{tracker.carrier} says: {tracking_details.message} in {tracking_details.tracking_location.city}, {tracking_details.tracking_location.country}"
+                    message += f"{tracker.carrier} says: {tracking_details.message} in {tracking_details.tracking_location.city}, {tracking_details.tracking_location.country}\nClick the link for live preview tracking: {tracker.public_url}"
                     break
         return "Update on package sent to customer via SMS"
     else:
